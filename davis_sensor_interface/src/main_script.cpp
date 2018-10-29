@@ -161,5 +161,9 @@ int main(int argc, char * argv[]) {
 
 	davisHandle.dataStop();
 
+	// Close automatically done by destructor.
+	if( vm.count("frame") ) cv::destroyWindow("DVS-APS");
+	if( vm.count("event") )	cv::destroyWindow("DVS-EVS");
+
 	return (EXIT_SUCCESS);
 }

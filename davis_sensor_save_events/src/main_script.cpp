@@ -227,6 +227,9 @@ int main(int argc, char * argv[]) {
 	fIMUOutput.close();
 	fImageOutput.close();
 
+	if( vm.count("frame") ) cv::destroyWindow("DVS-APS");
+	if( vm.count("event") )	cv::destroyWindow("DVS-EVS");
+
 	std::cout << "Stopped logging to file." << std::endl;
 
 	return (EXIT_SUCCESS);
