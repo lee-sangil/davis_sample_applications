@@ -13,7 +13,7 @@ Tested in Ubuntu 16.04LTS and OpenCV 3.4.3.
 
     sudo apt-get install libboost-all-dev libopencv-dev
   
-### 2. Build
+### 2. Build Library
 
     chmod 755 install_libcaer.sh
     ./install_libcaer.sh
