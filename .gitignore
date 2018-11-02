@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# Build folders
+davis_sensor_interface/build/
+davis_sensor_save_events/build/
