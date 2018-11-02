@@ -11,9 +11,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-using namespace std;
-
-static atomic_bool globalShutdown(false);
+static std::atomic_bool globalShutdown(false);
 
 static void globalShutdownSignalHandler(int signal) {
 	// Simply set the running flag to false on SIGTERM and SIGINT (CTRL+C) for global shutdown.
@@ -105,7 +103,7 @@ int main(int argc, char * argv[]) {
 	// Let's turn on blocking data-get mode to avoid wasting resources.
 	davisHandle.configSet(CAER_HOST_CONFIG_DATAEXCHANGE, CAER_HOST_CONFIG_DATAEXCHANGE_BLOCKING, true);
 
-	while (!globalShutdown.load(memory_order_relaxed)) {
+	while (!globalShutdown.load(std::memory_order_relaxed)) {
 		std::unique_ptr<libcaer::events::EventPacketContainer> packetContainer = davisHandle.dataGet();
 		if (packetContainer == nullptr) {
 			continue; // Skip if nothing there.

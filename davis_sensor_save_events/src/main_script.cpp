@@ -11,9 +11,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-using namespace std;
-
-static atomic_bool globalShutdown(false);
+static std::atomic_bool globalShutdown(false);
 
 static void globalShutdownSignalHandler(int signal) {
 	// Simply set the running flag to false on SIGTERM and SIGINT (CTRL+C) for global shutdown.
@@ -133,7 +131,7 @@ int main(int argc, char * argv[]) {
 	std::string image_file_name;
 	unsigned int image_index = 0;
 
-	while (!globalShutdown.load(memory_order_relaxed)) {
+	while (!globalShutdown.load(std::memory_order_relaxed)) {
 		std::unique_ptr<libcaer::events::EventPacketContainer> packetContainer = davisHandle.dataGet();
 		if (packetContainer == nullptr) {
 			continue; // Skip if nothing there.
