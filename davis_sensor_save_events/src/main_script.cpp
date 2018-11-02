@@ -161,7 +161,7 @@ int main(int argc, char * argv[]) {
 						cvEvents.at<cv::Vec3b>(y, x) = pol? cv::Vec3b{0, 0, 255} : cv::Vec3b{0, 255, 0};
 					}
 
-					fEventOutput << ts << " " << x << " " << y << " " << pol << std::endl;
+					fEventOutput << std::fixed << std::setprecision(6) << (double)ts*1e-6 << " " << x << " " << y << " " << pol << std::endl;
 				}
 
 				if( vm.count("event") ){
@@ -183,7 +183,7 @@ int main(int argc, char * argv[]) {
 					float gyroY  = evt.getGyroY();
 					float gyroZ  = evt.getGyroZ();
 
-					fIMUOutput << ts << " " << accelX << " " << accelY << " " << accelZ << " " << gyroX
+					fIMUOutput << std::fixed << std::setprecision(6) << (double)ts*1e-6 << " " << accelX << " " << accelY << " " << accelZ << " " << gyroX
 							   << " " << gyroY << " " << gyroZ << std::endl;
 				}
 			}
@@ -205,7 +205,7 @@ int main(int argc, char * argv[]) {
 							cv::waitKey(1);
 					}
 
-					sprintf(image_index_char, "%08d", image_index++);
+					sprintf(image_index_char, "frame_%08d", image_index++);
 					image_file_name = folder_name_img + image_index_char + ".png";
 					cv::imwrite(image_file_name, cvFrame);
 
@@ -213,7 +213,7 @@ int main(int argc, char * argv[]) {
 						std::cout << image_file_name << std::endl;
 					}
 
-					fImageOutput << ts << " " << "images/frame_" << image_index_char << ".png" << std::endl;
+					fImageOutput << std::fixed << std::setprecision(6) << (double)ts*1e-6 << " " << "images/" << image_index_char << ".png" << std::endl;
 				}
 
 			}
