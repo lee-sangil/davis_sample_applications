@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+<name>davis_sensor_save_events_ros</name>
+<version>0.1.0</version>
+<description>Save images and events</description>
+
+<maintainer email="sangillee724@gmail.com">Sangil Lee</maintainer>
+<license>GPLv3</license>
+<url type="website">http://www.sangillee.com</url>
+<author email="sangillee724@gmail.com">Sangil Lee</author>
+
+<buildtool_depend>catkin</buildtool_depend>
+
+<build_depend>roscpp</build_depend>
+<build_depend>rospy</build_depend>
+<build_depend>rosbag</build_depend>
+<build_depend>cv_bridge</build_depend>
+<build_depend>image_transport</build_depend>
+<build_depend>sensor_msgs</build_depend>
+<build_depend>std_msgs</build_depend>
+
+<run_depend>roscpp</run_depend>
+<run_depend>rospy</run_depend>
+<run_depend>rosbag</run_depend>
+<run_depend>cv_bridge</run_depend>
+<run_depend>image_transport</run_depend>
+<run_depend>sensor_msgs</run_depend>
+<run_depend>message_runtime</run_depend>
+
+</package>
