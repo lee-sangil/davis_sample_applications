@@ -36,4 +36,15 @@
 # Build folders
 davis_sensor_interface/build/
 davis_sensor_save_events/build/
-davis_sensor_save_events_ros/build/
+
+
+# Docs
+*.txt
+
+
+# Figures
+*.png
+*.jpg
+*.jpeg
+*.tiff
+*.gif
