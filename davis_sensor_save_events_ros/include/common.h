@@ -20,6 +20,8 @@
 #include <sensor_msgs/Image.h>
 #include <sensor_msgs/image_encodings.h>
 #include <sensor_msgs/Imu.h>
+#include <dvs_msgs/Event.h>
+#include <dvs_msgs/EventArray.h>
 #include <nav_msgs/Odometry.h>
 #include <geometry_msgs/TransformStamped.h>
 

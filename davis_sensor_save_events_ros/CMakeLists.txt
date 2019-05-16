@@ -53,7 +53,7 @@ SET(CAER_INCDIRS ${CAER_INCDIRS} ${OpenCV_INCLUDE_DIRS})
 SET(CAER_LIBDIRS ${CAER_LIBDIRS} ${OpenCV_LIBRARY_DIRS})
 SET(CAER_LIBS ${CAER_LIBS} ${OpenCV_LIBRARIES})
 
-FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp rospy cv_bridge roslib image_transport sensor_msgs std_msgs nav_msgs geometry_msgs)
+FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp rospy cv_bridge roslib image_transport sensor_msgs std_msgs dvs_msgs nav_msgs geometry_msgs)
 catkin_package()
 
 SET(CAER_INCDIRS ${CAER_INCDIRS} ${catkin_INCLUDE_DIRS})
@@ -63,6 +63,18 @@ SET(CAER_LIBS ${CAER_LIBS} ${catkin_LIBRARIES})
 # Add local directory to include and library paths
 SET(CAER_INCDIRS ${CAER_INCDIRS} ${CMAKE_SOURCE_DIR}/)
 SET(CAER_LIBDIRS ${CAER_LIBDIRS} ${CMAKE_SOURCE_DIR}/)
+
+# # make the executable
+# cs_add_executable(davis_ros_driver
+#   src/driver_node.cpp
+#   src/driver.cpp
+# )
+# 
+# # make the nodelet into a library
+# cs_add_library(davis_ros_driver_nodelet
+#   src/driver_nodelet.cpp
+#   src/driver.cpp
+# )
 
 # Set include/library paths for successive compilation.
 INCLUDE_DIRECTORIES(

@@ -10,7 +10,7 @@
 <!--param name="/camera/driver/exposure" value="20"/-->
 
 <include file="$(find vicon_bridge)/launch/vicon.launch"/>
-<node pkg="davis_ros_driver" name="davis_ros_driver" type="davis_ros_driver" />
+<include file="$(find dvs_renderer)/launch/davis_mono.launch"/>
 <node pkg="davis_sensor_save_events_ros" name="davis_sensor_save_events" type="davis_sensor_save_events_ros" args="$(arg args)" output="screen">
 	<remap from="/image" to="$(arg image)"/>
 	<remap from="/event" to="$(arg event)"/>

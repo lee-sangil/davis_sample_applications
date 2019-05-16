@@ -29,8 +29,8 @@ class Communicator{
 			system(folder_create_command.c_str());
 
 			// Make image filename log
-			image_log.open((save_loc + "image.txt").c_str());
-			event_log.open((save_loc + "event.txt").c_str());
+			image_log.open((save_loc + "images.txt").c_str());
+			event_log.open((save_loc + "events.txt").c_str());
 			imu_log.open((save_loc + "imu.txt").c_str());
 			vicon_log.open((save_loc + "groundtruth.txt").c_str());
 
@@ -49,7 +49,7 @@ class Communicator{
 
 			sub_image = nh_.subscribe<sensor_msgs::Image>("/image", 1, &Communicator::callback_aps, this );
 			sub_imu = nh_.subscribe<sensor_msgs::Imu>("/imu", 10, &Communicator::callback_imu, this );
-//			sub_event = nh_.subscribe<dvs_msgs::EventArray>("/event", 10, &Communicator::callback_dvs, this );
+			sub_event = nh_.subscribe<dvs_msgs::EventArray>("/event", 10, &Communicator::callback_dvs, this );
 			sub_vicon = nh_.subscribe<geometry_msgs::TransformStamped>("/vicon", 10, &Communicator::callback_vicon, this );
 
 			ROS_INFO("initialize ROS");
@@ -62,9 +62,9 @@ class Communicator{
 
 			ROS_INFO("file is successfully closed.");
 		}
-		void callback_aps(const sensor_msgs::ImageConstPtr& msg_image);
-		void callback_imu(const sensor_msgs::ImuConstPtr& msg_imu);
-//		void callback_dvs(const dvs_msgs::EventArrayPtr& msg_event);
+		void callback_aps(const sensor_msgs::Image::ConstPtr& msg_image);
+		void callback_imu(const sensor_msgs::Imu::ConstPtr& msg_imu);
+		void callback_dvs(const dvs_msgs::EventArray::ConstPtr& msg_event);
 		void callback_vicon(const nav_msgs::Odometry::ConstPtr& msg_vicon);
 		void callback_vicon(const geometry_msgs::TransformStamped::ConstPtr& msg_vicon);
 
@@ -94,23 +94,24 @@ void Communicator::callback_aps(const sensor_msgs::ImageConstPtr& msg_image){
 	std::string image_file_name;
 	image_file_name = folder_name_image + time.str() + ".png";
 	cv::imwrite(image_file_name, image);
-	std::cout << image_file_name << std::endl;
 
 	image_log << time.str() << " image/" << time.str() << ".png" << std::endl;
 }
 
-//void Communicator::callback_dvs(const dvs_msgs::EventArrayPtr& msg_event){
-//
-//	for( e = 0; e < msg_event->events.size(); e++ ){
-//		event_log << std::setprecision(10) << std::fixed
-//			<< msg_event->events[e].ts << '\t'
-//			<< msg_event->events[e].x << '\t'
-//			<< msg_event->events[e].y << '\t'
-//			<< msg_event->events[e].polarity << std::endl;
-//	}
-//}
+void Communicator::callback_dvs(const dvs_msgs::EventArray::ConstPtr& msg_event){
 
-void Communicator::callback_imu(const sensor_msgs::ImuConstPtr& msg_imu){
+	if( msg_event->header.stamp.sec != 0 ){
+		for( unsigned int e = 0; e < msg_event->events.size(); e++ ){
+			event_log << std::setprecision(10) << std::fixed
+				<< msg_event->events[e].ts << '\t'
+				<< msg_event->events[e].x << '\t'
+				<< msg_event->events[e].y << '\t'
+				<< msg_event->events[e].polarity+0 << std::endl;
+		}
+	}
+}
+
+void Communicator::callback_imu(const sensor_msgs::Imu::ConstPtr& msg_imu){
 	
 	std::stringstream time;
 	time << std::setprecision(6) << std::fixed << ros::Time::now().toSec();
