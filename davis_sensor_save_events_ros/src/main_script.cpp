@@ -1,14 +1,12 @@
 #include "common.h"
 #include "parser.h"
 
-typedef message_filters::sync_policies::ApproximateTime<sensor_msgs::Image, sensor_msgs::Image> mySyncPolicy;
-
 class Communicator{
 	public:
-		Communicator():sync_(mySyncPolicy(10)){
+		Communicator(){
 			if(Parser::hasOption("-help")){
 				std::cout << "Optional -o: Output folder path (default: ros package location).\n"
-					"Example: rosrun xtionpro_sensor_save_images xtionpro_sensor_save_images -o /path/to/output/" << std::endl;
+					"Example: rosrun davis_sensor_save_events davis_sensor_save_events -o /path/to/output/" << std::endl;
 			}
 			
 			// Make folders for saving current image
@@ -16,81 +14,72 @@ class Communicator{
 			if(Parser::hasOption("-o")){
 				save_loc = Parser::getStringOption("-o");
 			}else{
-				std::string pwd = ros::package::getPath("xtionpro_sensor_save_images_ros");
+				std::string pwd = ros::package::getPath("davis_sensor_save_events_ros");
 				save_loc = pwd + "/dataset/";
 			}
 
-			folder_name_rgb = save_loc + "rgb/";
-			folder_name_depth = save_loc + "depth/";
+			folder_name_image = save_loc + "image/";
 
 			std::string folder_remove_command;
-			folder_remove_command = "rm -rf " + folder_name_depth;
-			system(folder_remove_command.c_str());
-			folder_remove_command = "rm -rf " + folder_name_rgb;
+			folder_remove_command = "rm -rf " + folder_name_image;
 			system(folder_remove_command.c_str());
 
 			std::string folder_create_command;
-			folder_create_command = "mkdir -p " + folder_name_depth;
-			system(folder_create_command.c_str());
-			folder_create_command = "mkdir -p " + folder_name_rgb;
+			folder_create_command = "mkdir -p " + folder_name_image;
 			system(folder_create_command.c_str());
 
-			// Make rgb and depth filename log
-			rgb_log.open((save_loc + "rgb.txt").c_str());
-			depth_log.open((save_loc + "depth.txt").c_str());
-			asc_log.open((save_loc + "associations.txt").c_str());
+			// Make image filename log
+			image_log.open((save_loc + "image.txt").c_str());
+			event_log.open((save_loc + "event.txt").c_str());
+			imu_log.open((save_loc + "imu.txt").c_str());
 			vicon_log.open((save_loc + "groundtruth.txt").c_str());
 
-			rgb_log << "# color images" << std::endl;
-			rgb_log << "# file" << std::endl;
-			rgb_log << "# timestamp filename" << std::endl;
+			image_log << "# gray images" << std::endl;
+			image_log << "# timestamp filename" << std::endl;
 
-			depth_log << "# depth images" << std::endl;
-			depth_log << "# file" << std::endl;
-			depth_log << "# timestamp filename" << std::endl;
+			event_log << "# events" << std::endl;
+			event_log << "# timestamp x y polarity" << std::endl;
+
+			imu_log << "# imu" << std::endl;
+			imu_log << "# acceleration gyroscope" << std::endl;
+			imu_log << "# timestamp ax ay az gx gy gz" << std::endl;
 
 			vicon_log << "# time x y z qx qy qz qw vx vy vz wx wy wz" << std::endl;
-
 			ROS_INFO("file is successfully opened.");
 
-			sub_depth.subscribe( nh_, "/camera/depth/image_rect", 1 );
-			sub_rgb.subscribe( nh_, "/camera/rgb/image_rect_color", 1 );
-//			sub_vicon = nh_.subscribe<nav_msgs::Odometry>("/vicon/lsi_asus/lsi_asus", 10, &Communicator::callback_vicon, this);
-			sub_vicon = nh_.subscribe<geometry_msgs::TransformStamped>("/vicon/lsi_asus/lsi_asus", 10, &Communicator::callback_vicon, this);
-
-			sync_.connectInput(sub_rgb, sub_depth);
-			sync_.registerCallback(boost::bind(&Communicator::callback_asus, this, _1, _2));
+			sub_image = nh_.subscribe<sensor_msgs::Image>("/image", 1, &Communicator::callback_aps, this );
+			sub_imu = nh_.subscribe<sensor_msgs::Imu>("/imu", 10, &Communicator::callback_imu, this );
+//			sub_event = nh_.subscribe<dvs_msgs::EventArray>("/event", 10, &Communicator::callback_dvs, this );
+			sub_vicon = nh_.subscribe<geometry_msgs::TransformStamped>("/vicon", 10, &Communicator::callback_vicon, this );
 
 			ROS_INFO("initialize ROS");
 		}
 		~Communicator(){
-			if( rgb_log.is_open() ) rgb_log.close();
-			if( depth_log.is_open() ) depth_log.close();
-			if( asc_log.is_open() ) asc_log.close();
+			if( image_log.is_open() ) image_log.close();
+			if( event_log.is_open() ) event_log.close();
+			if( imu_log.is_open() ) imu_log.close();
 			if( vicon_log.is_open() ) vicon_log.close();
 
 			ROS_INFO("file is successfully closed.");
 		}
-		void callback_asus(const sensor_msgs::ImageConstPtr& msg_rgb, const sensor_msgs::ImageConstPtr& msg_depth);
+		void callback_aps(const sensor_msgs::ImageConstPtr& msg_image);
+		void callback_imu(const sensor_msgs::ImuConstPtr& msg_imu);
+//		void callback_dvs(const dvs_msgs::EventArrayPtr& msg_event);
 		void callback_vicon(const nav_msgs::Odometry::ConstPtr& msg_vicon);
 		void callback_vicon(const geometry_msgs::TransformStamped::ConstPtr& msg_vicon);
 
 	private:
 		ros::NodeHandle nh_;
-		ros::Subscriber sub_vicon;
-		message_filters::Subscriber<sensor_msgs::Image> sub_rgb;
-		message_filters::Subscriber<sensor_msgs::Image> sub_depth;
-		message_filters::Synchronizer<mySyncPolicy> sync_;
-		std::ofstream rgb_log, depth_log, asc_log, vicon_log;
-		std::string folder_name_rgb, folder_name_depth;
+		ros::Subscriber sub_vicon, sub_image, sub_imu, sub_event;
+		std::ofstream image_log, event_log, imu_log, vicon_log;
+		std::string folder_name_image;
 };
 
-void Communicator::callback_asus(const sensor_msgs::ImageConstPtr& msg_rgb, const sensor_msgs::ImageConstPtr& msg_depth){
-	cv_bridge::CvImagePtr img_ptr_rgb, img_ptr_depth;
+void Communicator::callback_aps(const sensor_msgs::ImageConstPtr& msg_image){
+	cv_bridge::CvImagePtr img_ptr_image;
 
 	try{
-		img_ptr_rgb = cv_bridge::toCvCopy(msg_rgb, sensor_msgs::image_encodings::BGR8);
-		img_ptr_depth = cv_bridge::toCvCopy(msg_depth, sensor_msgs::image_encodings::TYPE_32FC1);
+		img_ptr_image = cv_bridge::toCvCopy(msg_image, sensor_msgs::image_encodings::BGR8);
 	}
 	catch (cv_bridge::Exception& e){
 		ROS_ERROR("cv_bridge exception:  %s", e.what());
@@ -100,22 +89,40 @@ void Communicator::callback_asus(const sensor_msgs::ImageConstPtr& msg_rgb, cons
 	std::stringstream time;
 	time << std::setprecision(6) << std::fixed << ros::Time::now().toSec();
 
-	cv::Mat color = img_ptr_rgb->image;
-	cv::Mat depth = img_ptr_depth->image*1000;
-	depth.convertTo(depth, CV_16UC1);
+	cv::Mat image = img_ptr_image->image;
 
 	std::string image_file_name;
-	image_file_name = folder_name_depth + time.str() + ".png";
-	cv::imwrite(image_file_name, depth);
+	image_file_name = folder_name_image + time.str() + ".png";
+	cv::imwrite(image_file_name, image);
 	std::cout << image_file_name << std::endl;
 
-	image_file_name = folder_name_rgb + time.str() + ".png";
-	cv::imwrite(image_file_name, color);
-	std::cout << image_file_name << std::endl;
+	image_log << time.str() << " image/" << time.str() << ".png" << std::endl;
+}
 
-	rgb_log << time.str() << " rgb/" << time.str() << ".png" << std::endl;
-	depth_log << time.str() << " depth/" << time.str() << ".png" << std::endl;
-	asc_log << time.str() << " rgb/" << time.str() << ".png " << time.str() << " depth/" << time.str() << ".png" << std::endl;
+//void Communicator::callback_dvs(const dvs_msgs::EventArrayPtr& msg_event){
+//
+//	for( e = 0; e < msg_event->events.size(); e++ ){
+//		event_log << std::setprecision(10) << std::fixed
+//			<< msg_event->events[e].ts << '\t'
+//			<< msg_event->events[e].x << '\t'
+//			<< msg_event->events[e].y << '\t'
+//			<< msg_event->events[e].polarity << std::endl;
+//	}
+//}
+
+void Communicator::callback_imu(const sensor_msgs::ImuConstPtr& msg_imu){
+	
+	std::stringstream time;
+	time << std::setprecision(6) << std::fixed << ros::Time::now().toSec();
+	
+	imu_log << std::setprecision(10) << std::fixed
+		<< time.str() << '\t'
+		<< msg_imu->linear_acceleration.x << '\t'
+		<< msg_imu->linear_acceleration.y << '\t'
+		<< msg_imu->linear_acceleration.z << '\t'
+		<< msg_imu->angular_velocity.x << '\t'
+		<< msg_imu->angular_velocity.y << '\t'
+		<< msg_imu->angular_velocity.z << std::endl;
 }
 
 void Communicator::callback_vicon(const nav_msgs::Odometry::ConstPtr& msg_vicon){
@@ -158,7 +165,7 @@ void Communicator::callback_vicon(const geometry_msgs::TransformStamped::ConstPt
 
 int main(int argc, char * argv[]){
 
-	ros::init(argc, argv, "xtionpro_sensor_save_images");
+	ros::init(argc, argv, "davis_sensor_save_images");
 	Parser::init(argc, argv);
 
 	Communicator comm_;

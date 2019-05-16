@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<launch>
+
+<arg name="image" default="/dvs/image_raw"/>
+<arg name="event" default="/dvs/events"/>
+<arg name="imu" default="/dvs/imu"/>
+<arg name="vicon" default="/vicon/lsi_asus/lsi_asus"/>
+<arg name="args" default=""/>
+
+<!--param name="/camera/driver/exposure" value="20"/-->
+
+<include file="$(find vicon_bridge)/launch/vicon.launch"/>
+<node pkg="davis_ros_driver" name="davis_ros_driver" type="davis_ros_driver" />
+<node pkg="davis_sensor_save_events_ros" name="davis_sensor_save_events" type="davis_sensor_save_events_ros" args="$(arg args)" output="screen">
+	<remap from="/image" to="$(arg image)"/>
+	<remap from="/event" to="$(arg event)"/>
+	<remap from="/imu" to="$(arg imu)"/>
+	<remap from="/vicon" to="$(arg vicon)"/>
+</node>
+
+</launch>
