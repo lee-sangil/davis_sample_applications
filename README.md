@@ -9,6 +9,12 @@ Tested in Ubuntu 16.04LTS with OpenCV 3.4.6, libCAER 3.1.9.
 
 * **davis_sensor_save_events_ros**: Save the current events, imu, vicon, and gray images, and display the image using openCV.
 
+## Prerequisites
+
+* OpenCV
+* [libCAER](https://github.com/inivation/libcaer)
+* [rpg_dvs_ros](https://github.com/uzh-rpg/rpg_dvs_ros)
+* [vicon_bridge](https://github.com/ethz-asl/vicon_bridge)
 ## Installation
 
 ### 1. Required Dependencies
