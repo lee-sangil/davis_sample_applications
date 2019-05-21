@@ -4,13 +4,32 @@
 <arg name="image" default="/dvs/image_raw"/>
 <arg name="event" default="/dvs/events"/>
 <arg name="imu" default="/dvs/imu"/>
+<arg name="info" default="/dvs/camera_info"/>
 <arg name="vicon" default="/vicon/lsi_asus/lsi_asus"/>
+<arg name="setting" default="DAVIS240C.yaml"/>
 <arg name="args" default=""/>
 
-<!--param name="/camera/driver/exposure" value="20"/-->
-
 <include file="$(find vicon_bridge)/launch/vicon.launch"/>
-<include file="$(find dvs_renderer)/launch/davis_mono.launch"/>
+
+<!-- camera driver -->
+<node name="davis_ros_driver" pkg="davis_ros_driver" type="davis_ros_driver">
+	<rosparam command="load" file="$(find davis_ros_driver)/config/$(arg setting)" />
+</node>
+
+<!-- visualization -->
+<node name="dvs_renderer" pkg="dvs_renderer" type="dvs_renderer">
+	<param name="display_method" value="red-blue"/>
+	<remap from="events" to="$(arg event)" />
+	<remap from="image" to="$(arg image)" />
+	<remap from="camera_info" to="$(arg info)" />
+</node>
+
+<!-- display -->
+<node name="image_view" pkg="image_view" type="image_view">
+	<remap from="image" to="dvs_rendering"/>
+</node>
+
+<!-- <include file="$(find dvs_renderer)/launch/davis_mono.launch"/> -->
 <node pkg="davis_sensor_save_events_ros" name="davis_sensor_save_events" type="davis_sensor_save_events_ros" args="$(arg args)" output="screen">
 	<remap from="/image" to="$(arg image)"/>
 	<remap from="/event" to="$(arg event)"/>
