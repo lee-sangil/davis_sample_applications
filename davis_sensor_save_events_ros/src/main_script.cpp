@@ -4,21 +4,23 @@
 class Communicator{
 	public:
 		Communicator(){
-			if(Parser::hasOption("-help")){
-				std::cout << "Optional -o: Output folder path (default: ros package location).\n"
+			if(Parser::hasOption("--help") || Parser::hasOption("-h")){
+				std::cout << "Optional --outputdir (-o): output folder path (default: ros package location).\n"
 					"Example: rosrun davis_sensor_save_events davis_sensor_save_events -o /path/to/output/" << std::endl;
 			}
 			
 			// Make folders for saving current image
 			std::string save_loc;
-			if(Parser::hasOption("-o")){
+			if(Parser::hasOption("--outputdir")){
+				save_loc = Parser::getStringOption("--outputdir");
+			}else if(Parser::hasOption("-o")){
 				save_loc = Parser::getStringOption("-o");
 			}else{
 				std::string pwd = ros::package::getPath("davis_sensor_save_events_ros");
 				save_loc = pwd + "/dataset/";
 			}
 
-			folder_name_image = save_loc + "image/";
+			folder_name_image = save_loc + "/image/";
 
 			std::string folder_remove_command;
 			folder_remove_command = "rm -rf " + folder_name_image;
@@ -29,10 +31,10 @@ class Communicator{
 			system(folder_create_command.c_str());
 
 			// Make image filename log
-			image_log.open((save_loc + "images.txt").c_str());
-			event_log.open((save_loc + "events.txt").c_str());
-			imu_log.open((save_loc + "imu.txt").c_str());
-			vicon_log.open((save_loc + "groundtruth.txt").c_str());
+			image_log.open((save_loc + "/images.txt").c_str());
+			event_log.open((save_loc + "/events.txt").c_str());
+			imu_log.open((save_loc + "/imu.txt").c_str());
+			vicon_log.open((save_loc + "/groundtruth.txt").c_str());
 
 			image_log << "# gray images" << std::endl;
 			image_log << "# timestamp filename" << std::endl;
@@ -100,7 +102,7 @@ void Communicator::callback_aps(const sensor_msgs::ImageConstPtr& msg_image){
 
 void Communicator::callback_dvs(const dvs_msgs::EventArray::ConstPtr& msg_event){
 
-	if( msg_event->header.stamp.sec != 0 ){
+	if( msg_event->header.stamp.sec > 1 ){
 		for( unsigned int e = 0; e < msg_event->events.size(); e++ ){
 			event_log << std::setprecision(10) << std::fixed
 				<< msg_event->events[e].ts << '\t'
